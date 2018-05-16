@@ -101,7 +101,11 @@ module Cocoon
         new_object = create_object(f, association, force_non_association_create)
         new_object = wrap_object.call(new_object) if wrap_object.respond_to?(:call)
 
-        html_options[:'data-association-insertion-template'] = CGI.escapeHTML(render_association(association, f, new_object, form_parameter_name, render_options, override_partial).to_str).html_safe
+        html_options[:'data-association-insertion-template'] = CGI.escapeHTML(
+          render_association(
+            association, f, new_object, form_parameter_name, render_options, override_partial
+          ).to_str
+        ).html_safe
 
         html_options[:'data-count'] = count if count > 0
 
@@ -126,9 +130,14 @@ module Cocoon
     private
 
     def create_object_on_non_association(f, association)
-      builder_method = %W{build_#{association} build_#{association.to_s.singularize}}.select { |m| f.object.respond_to?(m) }.first
-      return f.object.send(builder_method) if builder_method
-      raise "Association #{association} doesn't exist on #{f.object.class}"
+      builder_method = %W{build_#{association} build_#{association.to_s.singularize}}
+        .select { |m| f.object.respond_to?(m) }.first
+
+      if builder_method
+        return f.object.send(builder_method)
+      else
+        raise "Association #{association} doesn't exist on #{f.object.class}"
+      end
     end
 
     def create_object_on_association(f, association, instance, force_non_association_create)
