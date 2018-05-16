@@ -19,7 +19,9 @@ module Cocoon
       elsif args.first.respond_to?(:object)
         form = args.first
         association = form.object.class.to_s.tableize
-        name = I18n.translate("cocoon.#{association}.remove", default: I18n.translate('cocoon.defaults.remove'))
+        name = I18n.translate(
+          "cocoon.#{association}.remove", 
+          default: I18n.translate('cocoon.defaults.remove'))
 
         link_to_remove_association(name, *args)
       else
@@ -32,12 +34,16 @@ module Cocoon
         classes << "remove_fields"
         classes << (is_dynamic ? 'dynamic' : 'existing')
         classes << 'destroyed' if f.object.marked_for_destruction?
-        html_options[:class] = [html_options[:class], classes.join(' ')].compact.join(' ')
+        html_options[:class] = 
+          [html_options[:class], classes.join(' ')].compact.join(' ')
 
         wrapper_class = html_options.delete(:wrapper_class)
         html_options[:'data-wrapper-class'] = wrapper_class if wrapper_class.present?
 
-        hidden_field_tag("#{f.object_name}[_destroy]", f.object._destroy) + link_to(name, '#', html_options)
+        hidden_field_tag(
+          "#{f.object_name}[_destroy]", 
+          f.object._destroy) + link_to(name, '#', html_options
+        )
       end
     end
 
@@ -46,7 +52,7 @@ module Cocoon
       partial = get_partial_path(custom_partial, association)
       locals =  render_options.delete(:locals) || {}
       ancestors = f.class.ancestors.map{|c| c.to_s}
-      method_name = ancestors.include?('SimpleForm::FormBuilder') ? :simple_fields_for : (ancestors.include?('Formtastic::FormBuilder') ? :semantic_fields_for : :fields_for)
+      method_name = assign_form_support(ancestors)
       f.send(method_name, association, new_object, {:child_index => "new_#{association}"}.merge(render_options)) do |builder|
         partial_options = {form_name.to_sym => builder, :dynamic => true}.merge(locals)
         render(partial, partial_options)
@@ -155,5 +161,14 @@ module Cocoon
       instance.klass.new(*conditions)
     end
 
+    def assign_form_support(ancestors)
+      if ancestors.include?('SimpleForm::FormBuilder')
+        :simple_fields_for
+      elsif ancestors.include?('Formtastic::FormBuilder')
+        :semantic_fields_for
+      else
+        :fields_for
+      end
+    end
   end
 end
