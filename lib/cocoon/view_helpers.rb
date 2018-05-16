@@ -53,8 +53,11 @@ module Cocoon
       locals =  render_options.delete(:locals) || {}
       ancestors = f.class.ancestors.map{|c| c.to_s}
       method_name = assign_form_support(ancestors)
-      f.send(method_name, association, new_object, {:child_index => "new_#{association}"}.merge(render_options)) do |builder|
-        partial_options = {form_name.to_sym => builder, :dynamic => true}.merge(locals)
+      f.send(method_name, 
+        association, 
+        new_object, 
+        {child_index: "new_#{association}"}.merge(render_options)) do |builder|
+          partial_options = {form_name.to_sym => builder, dynamic: true}.merge(locals)
         render(partial, partial_options)
       end
     end
