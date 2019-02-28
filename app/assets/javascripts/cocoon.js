@@ -56,11 +56,12 @@
         insertionNode         = $this.data('association-insertion-node'),
         insertionTraversal    = $this.data('association-insertion-traversal'),
         count                 = parseInt($this.data('count'), 10),
-        regexp_braced         = regexp_bracer(assoc),
+        new_contents          = [];
+
+    var regexp_braced         = regexp_bracer(assoc),
         regexp_underscord     = regexp_underscorer(assoc),
         new_id                = create_new_id(),
-        new_content           = content.replace(regexp_braced, newcontent_braced(new_id)),
-        new_contents          = [];
+        new_content           = content.replace(regexp_braced, newcontent_braced(new_id));
 
     if (new_content == content) {
       regexp_braced     = regexp_bracer(assocs);
