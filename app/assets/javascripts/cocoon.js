@@ -23,27 +23,20 @@
   var regexp_underscorer = function(target_association) {
     return new RegExp('_new_' + target_association + '_(\\w*)', 'g')
   }
-
-  var getInsertionNodeElem = function(insertionNode, insertionTraversal, $this){
-
-    if (!insertionNode){
-      return $this.parent();
+  
+  // Setup regex wrappers assocations
+  var associationBuilder = function(new_id, association, assocations, content) {
+    var   regexp_braced     = regexp_bracer(association),
+    regexp_underscord = regexp_underscorer(association),
+    new_content       = content.replace(regexp_braced, newcontent_braced(new_id));
+    
+    if (new_content == content) {
+      regexp_braced     = regexp_bracer(assocations);
+      regexp_underscord = regexp_underscorer(assocations);
+      new_content       = content.replace(regexp_braced, newcontent_braced(new_id));
     }
+    return new_content = new_content.replace(regexp_underscord, newcontent_underscord(new_id));
 
-    if (typeof insertionNode == 'function'){
-      if(insertionTraversal){
-        console.warn('association-insertion-traversal is ignored, because association-insertion-node is given as a function.')
-      }
-      return insertionNode($this);
-    }
-
-    if(typeof insertionNode == 'string'){
-      if (insertionTraversal){
-        return $this[insertionTraversal](insertionNode);
-      }else{
-        return insertionNode == "this" ? $this : $(insertionNode);
-      }
-    }
   }
 
   $(document).on('click', '.add_fields', function(e) {
@@ -58,19 +51,25 @@
         count                 = parseInt($this.data('count'), 10),
         new_contents          = [];
 
-    var regexp_braced         = regexp_bracer(assoc),
-        regexp_underscord     = regexp_underscorer(assoc),
-        new_id                = create_new_id(),
-        new_content           = content.replace(regexp_braced, newcontent_braced(new_id));
+    var new_id                  = create_new_id();
 
-    if (new_content == content) {
-      regexp_braced     = regexp_bracer(assocs);
-      regexp_underscord = regexp_underscorer(assocs);
-      new_content       = content.replace(regexp_braced, newcontent_braced(new_id));
-    }
+    // var new_id                = create_new_id(),
+    //     regexp_braced         = regexp_bracer(assoc),
+    //     regexp_underscord     = regexp_underscorer(assoc),
+    //     new_content           = content.replace(regexp_braced, newcontent_braced(new_id));
 
-    new_content = new_content.replace(regexp_underscord, newcontent_underscord(new_id));
-    new_contents = [new_content];
+
+    // // If same - something went wrong in single assocation - rewrap them with pluralized calls
+    // if (new_content == content) {
+    //   regexp_braced     = regexp_bracer(assocs);
+    //   regexp_underscord = regexp_underscorer(assocs);
+    //   new_content       = content.replace(regexp_braced, newcontent_braced(new_id));
+    // }
+    
+    // This is now pluralized - potentionally - so wrap the nesting?
+    // new_content = new_content.replace(regexp_underscord, newcontent_underscord(new_id));
+    // new_contents = [new_content];
+    new_contents = [ associationBuilder(create_new_id(), assoc, assocs, content) ]
 
     count = (isNaN(count) ? 1 : Math.max(count, 1));
     count -= 1;
@@ -106,6 +105,29 @@
       }
     });
   });
+
+  var getInsertionNodeElem = function(insertionNode, insertionTraversal, $this){
+
+    if (!insertionNode){
+      return $this.parent();
+    }
+
+    if (typeof insertionNode == 'function'){
+      if(insertionTraversal){
+        console.warn('association-insertion-traversal is ignored, because association-insertion-node is given as a function.')
+      }
+      return insertionNode($this);
+    }
+
+    if(typeof insertionNode == 'string'){
+      if (insertionTraversal){
+        return $this[insertionTraversal](insertionNode);
+      }else{
+        return insertionNode == "this" ? $this : $(insertionNode);
+      }
+    }
+  }
+
 
   $(document).on('click', '.remove_fields.dynamic, .remove_fields.existing', function(e) {
     var $this = $(this),
